@@ -1,4 +1,8 @@
+import sys
+sys.path.insert(0, '/home/yildiz/GitRepos/Carlo/')
+
 import numpy as np
+# from src import world
 from world import World
 from agents import Car, RectangleBuilding, Pedestrian, Painting
 from geometry import Point
@@ -26,15 +30,12 @@ w.add(RectangleBuilding(Point(11.5, 20.5), Point(83, 65)))
 w.add(Painting(Point(113.5, 21.5), Point(97, 67), 'gray80'))
 w.add(RectangleBuilding(Point(114.5, 20.5), Point(95, 65)))
 
-# # Let's also add some zebra crossings, because why not.
+# Let's also add some crossings, because why not.
 for i in range(2, 120, 4):
     w.add(Painting(Point(i, 60), Point(2, 0.5), 'white'))
     w.add(Painting(Point(60, i), Point(0.5, 2), 'white'))
 w.add(Painting(Point(60, 60), Point(10, 10), 'gray'))
 
-# w.add(Painting(Point(70, 81), Point(0.5, 2), 'white'))
-# w.add(Painting(Point(71, 81), Point(0.5, 2), 'white'))
-# w.add(Painting(Point(72, 81), Point(0.5, 2), 'white'))
 
 # A Car object is a dynamic object -- it can move. We construct it using its center location and heading angle.
 c1 = Car(Point(60,40), np.pi/2)
