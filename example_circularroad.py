@@ -5,7 +5,7 @@ from geometry import Point
 import time
 from tkinter import *
 
-human_controller = True
+human_controller = False
 
 dt = 0.1 # time steps in terms of seconds. In other words, 1/dt is the FPS.
 world_width = 120 # in meters
