@@ -1,5 +1,5 @@
-import sys
-sys.path.insert(0, '/home/yildiz/GitRepos/Carlo/')
+from utils import *
+from simple_pid import PID
 
 import numpy as np
 from world import World
@@ -7,7 +7,8 @@ from agents import Car, RectangleBuilding, Pedestrian, Painting
 from geometry import Point
 import time
 
-human_controller = True
+pid_controller = True
+human_controller = False
 
 dt = 0.1 # time steps in terms of seconds. In other words, 1/dt is the FPS.
 w = World(dt, width = 120, height = 120, ppm = 6) # The world is 120 meters by 120 meters. ppm is the pixels per meter.
@@ -37,7 +38,7 @@ w.add(Painting(Point(60, 60), Point(10, 10), 'gray'))
 
 
 # A Car object is a dynamic object -- it can move. We construct it using its center location and heading angle.
-c1 = Car(Point(60,20), np.pi/2)
+c1 = Car(Point(0,57), np.pi*0)
 w.add(c1)
 
 c2 = Car(Point(100,60), np.pi, 'blue')
@@ -52,7 +53,46 @@ w.add(c2)
 w.render() # This visualizes the world we just constructed.
 
 
-if not human_controller:
+
+if pid_controller:
+    timesteps = 400
+    c1.set_control(0, 0)
+    pos_path = ego_position_path(initial=np.array([c1.x, c1.y]), final=np.array([63,120]), timesteps=timesteps)
+    ang_path = ego_angular_path(initial=c1.heading, final=0.5*np.pi, timesteps=timesteps)
+
+    PID_pos = PID(Kp=0.01, Ki=0.0001, Kd=0.2, sample_time=dt, setpoint=0)
+    PID_ang = PID(Kp=0.42, Ki=0.001, Kd=0.2, sample_time=dt, setpoint=0)
+    
+    for k in range(400):
+        if k < pos_path.shape[0]:
+            # Get throttle value.
+            pos_diff = get_pos_diff(pos_path[k], np.array([c1.x, c1.y]))
+            u_throttle = PID_pos(pos_diff, dt=dt)
+
+            # Get steering value.
+            ang_diff = get_ang_diff(ang_path[k], c1.heading)
+            u_steering = PID_ang(ang_diff, dt=dt)
+        
+        else:
+            # Get throttle value.
+            pos_diff = get_pos_diff(pos_path[-1], np.array([c1.x, c1.y]))
+            u_throttle = PID_pos(pos_diff, dt=dt)
+
+            # Get steering value.
+            ang_diff = get_ang_diff(ang_path[-1], c1.heading)
+            u_steering = PID_ang(ang_diff, dt=dt)
+
+        # import ipdb; ipdb.set_trace()
+        c1.set_control(u_steering, u_throttle)
+        w.tick() # This ticks the world for one time step (dt second)
+        w.render()
+        time.sleep(dt/20) # Let's watch it 4x
+
+        print(f"Timestep: {k}, Pos_Diff: {pos_diff} and u_th: {u_throttle}  |  Ang_Diff: {ang_diff} and u_st: {u_steering}")
+
+    
+
+elif not human_controller:
     # Let's implement some simple scenario with all agents
     # p1.set_control(0, 0.22) # The pedestrian will have 0 steering and 0.22 throttle. So it will not change its direction.
     c1.set_control(0, 0.35)
@@ -85,6 +125,12 @@ else: # Let's use the keyboard input for human control
     from interactive_controllers import KeyboardController
     controller = KeyboardController(w)
 
+    t = []
+    x = []
+    y = []
+    xp = []
+    yp = []
+
     for k in range(400):
         c1.set_control(controller.steering, controller.throttle)
         w.tick() # This ticks the world for one time step (dt second)
@@ -93,3 +139,13 @@ else: # Let's use the keyboard input for human control
         # if w.collision_exists():
         #     import sys
         #     sys.exit(0)
+
+        t.append(k)
+        x.append(c1.x)
+        y.append(c1.y)
+        xp.append(c1.xp)
+        yp.append(c1.yp)
+
+        print(f"{c1.heading} and {c1.angular_velocity}")
+
+# import ipdb; ipdb.set_trace()
