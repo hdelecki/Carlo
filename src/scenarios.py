@@ -17,18 +17,36 @@ def init_angle(dir):
     return table[dir]
 
 def init_position(dir):
-    table = {'south': (63,0),
-             'north': (57,120),
-             'east':  (120,63),
-             'west':  (0,57)}
-    return table[dir]
+    table = {'south': [63,40],
+             'north': [57,80],
+             'east':  [80,63],
+             'west':  [40,57]}
+    return np.array(table[dir])
 
 def final_position(dir):
-    table = {'south': (57,0),
-             'north': (63,120),
-             'east':  (120,57),
-             'west':  (0,63)}
-    return table[dir]
+    table = {'south': [57,40],
+             'north': [63,80],
+             'east':  [80,57],
+             'west':  [40,63]}
+    return np.array(table[dir])
+
+def mid_point_position(init, final):
+    right_turns = [('north', 'west'),
+                   ('west', 'south'),
+                   ('south', 'east'),
+                   ('east', 'north')]
+
+    if (init, final) in right_turns:  # right turn: turns a tighter angle 
+        table = {'south': [56,60],
+                 'north': [64,60],
+                 'east':  [60,56],
+                 'west':  [60,64]}
+    else:  # left or straight
+        table = {'south': [60,60],
+                 'north': [60,60],
+                 'east':  [60,60],
+                 'west':  [60,60]}
+    return np.array(table[final])
 
 def final_angle(dir):
     table = {'south': 1.5*np.pi,
@@ -61,19 +79,19 @@ def final_ref_sign(dir):
     return table[dir]
 
 def get_position_path(initial, final, timesteps, noise_std=0.0):
-    mid_point = np.array([60,60])
-    first_half = np.linspace(initial, mid_point, timesteps//2)
-    second_half = np.linspace(mid_point, final, timesteps//2)
+    mid_point = mid_point_position(initial, final)
+    first_half = np.linspace(init_position(initial), mid_point, timesteps//2)
+    second_half = np.linspace(mid_point, final_position(final), timesteps//2)
 
     result = np.vstack([first_half, second_half])
     return result + np.random.normal(scale=noise_std, size=result.shape)
 
 def get_angular_path(initial, final, timesteps, noise_std=0.0):
-    mid = np.linspace(initial, final, timesteps//5).reshape(-1,1)
+    mid = np.linspace(initial, final, timesteps//3).reshape(-1,1)
     z0 = np.ones_like(mid) * initial
     z1 = np.ones_like(mid) * final
 
-    result = np.vstack([z0, z0, mid, z1, z1])
+    result = np.vstack([z0, mid, z1])
     return result + np.random.normal(scale=noise_std, size=result.shape)
 
 def get_pos_diff(real, target, idx):
@@ -125,11 +143,11 @@ def spawn_rival(dt, timesteps, init='west', final='north', pos_path_noise=0.0, a
 
     car = Car(Point(*init_position(init)), init_angle(init), init_dir=init, final_dir=final, ts_total=timesteps)
 
-    car.pos_path = get_position_path(initial=np.array([*init_position(init)]), final=np.array([*final_position(final)]), timesteps=timesteps, noise_std=pos_path_noise)
+    car.pos_path = get_position_path(initial=init, final=final, timesteps=timesteps, noise_std=pos_path_noise)
     car.ang_path = get_angular_path(initial=car.heading, final=final_angle(final), timesteps=timesteps, noise_std=ang_path_noise)
 
-    car.pos_controller = PID(Kp=10.0, Ki=0.1, Kd=10.0, sample_time=dt, setpoint=0)
-    car.ang_controller = PID(Kp=2.0, Ki=0.001, Kd=0.01, sample_time=dt, setpoint=0)
+    car.pos_controller = PID(Kp=20.0, Ki=0.1, Kd=20.0, sample_time=dt, setpoint=0)
+    car.ang_controller = PID(Kp=2.0, Ki=0.001, Kd=0.1, sample_time=dt, setpoint=0)
 
 
     # Special cases due to angle wrapping:

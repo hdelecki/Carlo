@@ -12,11 +12,11 @@ import time
 dt = 0.1
 w = build_world(dt)
 
-ts_total = 200
+ts_total = 30
 
 for (init, final) in populate_rival_directions():
 
-    c1 = spawn_rival(dt, timesteps=ts_total, init=init, final=final)
+    c1 = spawn_rival(dt, timesteps=ts_total, init=init, final=final, pos_path_noise=0.01, ang_path_noise=0.01)
     c1.set_control(0, 0)
     w.add(c1)
 
@@ -27,7 +27,7 @@ for (init, final) in populate_rival_directions():
     w.render()
 
 
-    for ts in range(250):
+    for ts in range(ts_total):
         if w.collision_exists(): # we can check if there is any collision.
             print('Collision exists somewhere...')
 
@@ -36,10 +36,11 @@ for (init, final) in populate_rival_directions():
         
         w.tick() # This ticks the world for one time step (dt second)
         w.render()
-        time.sleep(dt/50) # Let's watch it 4x
+        time.sleep(dt/5) # Let's watch it 4x
 
         print(f"Timestep: {ts}, Pos_Diff: {pos_diff} and u_th: {u_throttle}  |  Ang_Diff: {ang_diff} and u_st: {u_steering}")
 
+    c1.set_control(0, -np.Inf)
     print((init, final))
 
-    # import ipdb; ipdb.set_trace()
+    import ipdb; ipdb.set_trace()
