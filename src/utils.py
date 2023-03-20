@@ -11,8 +11,9 @@ def empty_df():
                 'Y_Position': [],
                 'X_Velocity': [],
                 'Y_Velocity': [],
+                'Heading'   : [],
+                'U_Steering': [],
                 'U_Throttle': [],
-                'U_Steering': []
                 }
 
     return pd.DataFrame(df_values)

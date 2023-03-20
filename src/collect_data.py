@@ -53,7 +53,7 @@ def loop(id, init_dir, final_dir, ts_total):
             w.render()
             time.sleep(dt/20)
 
-        Rows.append([ts, c1.x, c1.y, c1.xp, c1.yp, u_steering, u_throttle])
+        Rows.append([ts, c1.x, c1.y, c1.xp, c1.yp, c1.heading, u_steering, u_throttle])
 
 
     Data = empty_df()
