@@ -23,23 +23,20 @@ from multiprocessing import cpu_count, Pool
 import istarmap  # import to apply patch
 
 
-def get_inputs(id, rival_dirs):
+def get_inputs(id, rival_dirs, ts_total_min, ts_total_max):
     init_dir, final_dir = choice(rival_dirs)
-
-    pos_noise = np.random.uniform(0.0, pos_path_noise_max)
-    ang_noise = np.random.uniform(0.0, ang_path_noise_max)
-    ts_total  = np.random.randint(100, ts_total_max)
+    ts_total  = np.random.randint(ts_total_min, ts_total_max)
 
     # print((init_dir, final_dir, pos_noise, ang_noise, ts_total))
-    return (id, init_dir, final_dir, pos_noise, ang_noise, ts_total)
+    return (id, init_dir, final_dir, ts_total)
 
 
-def loop(id, init_dir, final_dir, pos_noise, ang_noise, ts_total):
+def loop(id, init_dir, final_dir, ts_total):
     # Build the fourway intersection world
     dt = 0.1
     w = build_world(dt)
 
-    c1 = spawn_rival(dt, ts_total, init_dir, final_dir, pos_noise, ang_noise)
+    c1 = spawn_rival(dt, ts_total, init_dir, final_dir, pos_path_noise=0.01, ang_path_noise=0.01)
     c1.set_control(0, 0)
     w.add(c1)
 
@@ -71,17 +68,24 @@ if __name__ == "__main__":
 
     ### Params ###
     render = False
+    parallel = True
     num_of_runs = 100000
-    pos_path_noise_max = 0.2
-    ang_path_noise_max = 0.2
-    ts_total_max = 500
+    ts_total_min = 30
+    ts_total_max = 200
     ##############
 
 
-    num_cores = cpu_count()-1
+    rival_dirs = populate_rival_directions()
+    iterable = [get_inputs(id, rival_dirs, ts_total_min, ts_total_max) for id in tqdm(range(num_of_runs), desc="Building scenarios")]
 
-    with Pool(num_cores) as pool:
-        rival_dirs = populate_rival_directions()
-        iterable = [get_inputs(id, rival_dirs) for id in tqdm(range(num_of_runs), desc="Building scenarios")]
-        for _ in tqdm(pool.istarmap(loop, iterable), total=len(iterable), desc="Playing scenarios"):
-            pass
+    if parallel:
+        if render: raise Exception("Cannot render graphics while parallelized.")
+
+        num_cores = cpu_count()-1
+        with Pool(num_cores) as pool:
+            for _ in tqdm(pool.istarmap(loop, iterable), total=len(iterable), desc="Playing scenarios"):
+                pass
+
+    else:
+        for items in tqdm(iterable, desc="Playing scenarios"):
+            loop(*items)
