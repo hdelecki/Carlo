@@ -14,7 +14,11 @@ w = build_world(dt)
 
 # c1 = Car(Point(0,57), np.pi*0)
 ts_total = 200
-c1 = spawn_rival(dt, timesteps=ts_total, init='west', final='north')
+
+(init, final) = ('west', 'south')
+
+
+c1 = spawn_rival(dt, timesteps=ts_total, init=init, final=final)
 c1.set_control(0, 0)
 w.add(c1)
 
@@ -26,20 +30,18 @@ w.render()
 
 
 
-
-
-
-
-
 for ts in range(400):
-    if w.collision_exists(): # we can check if there is any collision.
-        print('Collision exists somewhere...')
+    # if w.collision_exists(): # we can check if there is any collision.
+    #     print('Collision exists somewhere...')
 
     pos_diff, ang_diff, u_steering, u_throttle = get_controls(c1, dt)
     c1.set_control(u_steering, u_throttle)
     
     w.tick() # This ticks the world for one time step (dt second)
     w.render()
-    time.sleep(dt/10) # Let's watch it 4x
+    time.sleep(dt/15) # Let's watch it 4x
 
     print(f"Timestep: {ts}, Pos_Diff: {pos_diff} and u_th: {u_throttle}  |  Ang_Diff: {ang_diff} and u_st: {u_steering}")
+
+print((init, final))
+

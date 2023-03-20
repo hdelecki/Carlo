@@ -14,13 +14,13 @@ def save_history(t, x, y, xp, yp):
 
     return pd.DataFrame(df_values)
 
-def ego_position_path(initial, final, timesteps):
+def get_position_path(initial, final, timesteps):
     mid_point = np.array([60,60])
     first_half = np.linspace(initial, mid_point, timesteps//2)
     second_half = np.linspace(mid_point, final, timesteps//2)
     return np.vstack([first_half, second_half])
 
-def ego_angular_path(initial, final, timesteps):
+def get_angular_path(initial, final, timesteps):
     mid = np.linspace(initial, final, timesteps//5).reshape(-1,1)
     z0 = np.ones_like(mid) * initial
     z1 = np.ones_like(mid) * final
@@ -71,7 +71,6 @@ def get_controls(car, dt):
     else: 
         idx=ref_position(car.final_dir)
         sgn=final_ref_sign(car.final_dir)
-        # import ipdb; ipdb.set_trace()
 
     if ts < car.pos_path.shape[0]:
         # Get throttle value.
@@ -91,5 +90,6 @@ def get_controls(car, dt):
         ang_diff = get_ang_diff(car.ang_path[-1], car.heading)
         u_steering = car.ang_controller(ang_diff, dt=dt)
 
+    # if ts > 82: import ipdb; ipdb.set_trace()
     car.ts_now += 1
     return pos_diff, ang_diff, u_steering, u_throttle

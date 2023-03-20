@@ -43,10 +43,17 @@ def spawn_rival(dt, timesteps, init='west', final='north'):
 
     car = Car(Point(*init_position(init)), init_angle(init), init_dir=init, final_dir=final, ts_total=timesteps)
 
-    car.pos_path = ego_position_path(initial=np.array([*init_position(init)]), final=np.array([*final_position(final)]), timesteps=timesteps)
-    car.ang_path = ego_angular_path(initial=car.heading, final=final_angle(final), timesteps=timesteps)
+    car.pos_path = get_position_path(initial=np.array([*init_position(init)]), final=np.array([*final_position(final)]), timesteps=timesteps)
+    car.ang_path = get_angular_path(initial=car.heading, final=final_angle(final), timesteps=timesteps)
 
     car.pos_controller = PID(Kp=10.0, Ki=0.1, Kd=10.0, sample_time=dt, setpoint=0)
     car.ang_controller = PID(Kp=2.0, Ki=0.001, Kd=0.01, sample_time=dt, setpoint=0)
+
+
+    # Special cases due to angle wrapping:
+    if (init, final) == ('north', 'east'):
+        car.ang_path = get_angular_path(initial=car.heading, final=2*np.pi, timesteps=timesteps)
+    elif (init, final) == ('west', 'south'):
+        car.ang_path = get_angular_path(initial=2*np.pi, final=final_angle(final), timesteps=timesteps)
 
     return car
