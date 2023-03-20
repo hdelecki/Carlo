@@ -12,21 +12,17 @@ import time
 dt = 0.1
 w = build_world(dt)
 
-# c1 = Car(Point(0,57), np.pi*0)
-ts_total = 200
+render = True
+ts_total = 177
+(init, final) = ('east', 'south')
 
-(init, final) = ('west', 'south')
-
-
-c1 = spawn_rival(dt, timesteps=ts_total, init=init, final=final)
+c1 = spawn_rival(dt, timesteps=ts_total, init=init, final=final, pos_path_noise=0.2, ang_path_noise=0.2)
 c1.set_control(0, 0)
 w.add(c1)
 
 c2 = Car(Point(100,60), np.pi, 'blue')
 c2.velocity = Point(3.0,0) # We can also specify an initial velocity just like this.
 w.add(c2)
-
-w.render()
 
 
 
@@ -38,8 +34,9 @@ for ts in range(400):
     c1.set_control(u_steering, u_throttle)
     
     w.tick() # This ticks the world for one time step (dt second)
-    w.render()
-    time.sleep(dt/15) # Let's watch it 4x
+    if render:
+        w.render()
+        time.sleep(dt/10) # Let's watch it 10x
 
     print(f"Timestep: {ts}, Pos_Diff: {pos_diff} and u_th: {u_throttle}  |  Ang_Diff: {ang_diff} and u_st: {u_steering}")
 

@@ -12,7 +12,6 @@ import time
 dt = 0.1
 w = build_world(dt)
 
-# c1 = Car(Point(0,57), np.pi*0)
 ts_total = 200
 
 for (init, final) in populate_rival_directions():
@@ -28,7 +27,6 @@ for (init, final) in populate_rival_directions():
     w.render()
 
 
-
     for ts in range(250):
         if w.collision_exists(): # we can check if there is any collision.
             print('Collision exists somewhere...')
@@ -38,10 +36,10 @@ for (init, final) in populate_rival_directions():
         
         w.tick() # This ticks the world for one time step (dt second)
         w.render()
-        time.sleep(dt/20) # Let's watch it 4x
+        time.sleep(dt/50) # Let's watch it 4x
 
         print(f"Timestep: {ts}, Pos_Diff: {pos_diff} and u_th: {u_throttle}  |  Ang_Diff: {ang_diff} and u_st: {u_steering}")
 
     print((init, final))
 
-    import ipdb; ipdb.set_trace()
+    # import ipdb; ipdb.set_trace()

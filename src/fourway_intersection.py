@@ -33,5 +33,4 @@ def build_world(dt = 0.1):
         w.add(Painting(Point(60, i), Point(0.5, 2), 'white'))
     w.add(Painting(Point(60, 60), Point(10, 10), 'gray'))
 
-    w.render() # This visualizes the world we just constructed.
     return w
