@@ -8,39 +8,54 @@ from agents import Car, RectangleBuilding, Pedestrian, Painting
 from geometry import Point
 import time
 
-# Build the fourway intersection world
-dt = 0.1
-w = build_world(dt)
+def test(u_throttle_allowed_values, u_steering_allowed_values):
 
-ts_total = 30
+    # Build the fourway intersection world
+    dt = 0.1
+    w = build_world(dt)
 
-for (init, final) in populate_rival_directions():
+    ts_total = 100
 
-    c1 = spawn_rival(dt, timesteps=ts_total, init=init, final=final, pos_path_noise=0.01, ang_path_noise=0.01)
-    c1.set_control(0, 0)
-    w.add(c1)
+    for (init, final) in populate_rival_directions():
 
-    c2 = Car(Point(100,60), np.pi, 'blue')
-    c2.velocity = Point(3.0,0) # We can also specify an initial velocity just like this.
-    w.add(c2)
+        c1 = spawn_rival(dt, timesteps=ts_total, init=init, final=final, pos_path_noise=0, ang_path_noise=0)
+        c1.set_control(0, 0)
+        w.add(c1)
 
-    w.render()
+        c2 = Car(Point(100,60), np.pi, 'blue')
+        c2.velocity = Point(3.0,0) # We can also specify an initial velocity just like this.
+        w.add(c2)
 
-
-    for ts in range(ts_total):
-        if w.collision_exists(): # we can check if there is any collision.
-            print('Collision exists somewhere...')
-
-        pos_diff, ang_diff, u_steering, u_throttle = get_controls(c1, dt)
-        c1.set_control(u_steering, u_throttle)
-        
-        w.tick() # This ticks the world for one time step (dt second)
         w.render()
-        time.sleep(dt/5) # Let's watch it 4x
 
-        print(f"Timestep: {ts}, Pos_Diff: {pos_diff} and u_th: {u_throttle}  |  Ang_Diff: {ang_diff} and u_st: {u_steering}")
 
-    c1.set_control(0, -np.Inf)
-    print((init, final))
+        for ts in range(ts_total):
+            if w.collision_exists(): # we can check if there is any collision.
+                print('Collision exists somewhere...')
 
-    import ipdb; ipdb.set_trace()
+            pos_diff, ang_diff, u_steering, u_throttle = get_controls(c1, dt)
+
+            u_throttle = find_nearest(u_throttle_allowed_values, u_throttle)
+            u_steering = find_nearest(u_steering_allowed_values, u_steering)
+
+            c1.set_control(u_steering, u_throttle)
+            
+            w.tick() # This ticks the world for one time step (dt second)
+            w.render()
+            time.sleep(dt/50) # Let's watch it 4x
+
+            print(f"Timestep: {ts}, Pos_Diff: {pos_diff} and u_th: {u_throttle}  |  Ang_Diff: {ang_diff} and u_st: {u_steering}")
+
+        c1.set_control(0, -np.Inf)
+        print((init, final))
+
+        import ipdb; ipdb.set_trace()
+
+if __name__ == "__main__":
+
+    ### Params ###
+    u_throttle_allowed_values = np.linspace(-2, +2, 3)
+    u_steering_allowed_values = np.linspace(-1, +1, 20)
+    ##############
+
+    test(u_throttle_allowed_values, u_steering_allowed_values)

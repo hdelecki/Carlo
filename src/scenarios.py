@@ -103,11 +103,17 @@ def get_pos_diff(real, target, idx):
 
 
 def get_ang_diff(real, target):
-    return (target-real)[0]
+    diff = (target-real)[0]
+    # return (diff + np.pi) % 2*np.pi - np.pi
+    if diff > np.pi: return diff - 2*np.pi
+    elif diff < -np.pi: return diff + 2*np.pi
+    else: return diff
 
 
 def get_controls(car, dt):
     ts = car.ts_now
+    # x = myround(car.x, split_into=4)
+    # y = myround(car.y, split_into=4)
 
     if ts < car.ts_total//2:
         idx=ref_position(car.init_dir)
@@ -116,25 +122,15 @@ def get_controls(car, dt):
         idx=ref_position(car.final_dir)
         sgn=final_ref_sign(car.final_dir)
 
-    if ts < min(car.ang_path.shape[0], car.pos_path.shape[0]):
-        # Get throttle value.
-        pos_diff = sgn * get_pos_diff(car.pos_path[ts], np.array([car.x, car.y]), idx=idx)
-        u_throttle = car.pos_controller(pos_diff, dt=dt)
+    # Get throttle value.
+    pos_diff = sgn * get_pos_diff(car.pos_path[ts], np.array([car.x, car.y]), idx=idx)
+    u_throttle = car.pos_controller(pos_diff, dt=dt)
 
-        # Get steering value.
-        ang_diff = get_ang_diff(car.ang_path[ts], car.heading)
-        u_steering = car.ang_controller(ang_diff, dt=dt)
+    # Get steering value.
+    ang_diff = get_ang_diff(car.ang_path[ts], car.heading)
+    u_steering = car.ang_controller(ang_diff, dt=dt)
 
-    else:
-        # Get throttle value.
-        pos_diff = sgn * get_pos_diff(car.pos_path[-1], np.array([car.x, car.y]), idx)
-        u_throttle = car.pos_controller(pos_diff, dt=dt)
-
-        # Get steering value.
-        ang_diff = get_ang_diff(car.ang_path[-1], car.heading)
-        u_steering = car.ang_controller(ang_diff, dt=dt)
-
-    car.ts_now += 1
+    if ts + 1 < min(car.ang_path.shape[0], car.pos_path.shape[0]): car.ts_now += 1
     return pos_diff, ang_diff, u_steering, u_throttle
 
 

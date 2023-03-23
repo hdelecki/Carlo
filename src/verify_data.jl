@@ -2,8 +2,8 @@ using CSV, DataFrames
 using ProgressBars: tqdm
 
 ### Params ###
-verify_csv = false
-verify_python_to_julia = true
+verify_csv = true
+verify_python_to_julia = false
 ##############
 
 

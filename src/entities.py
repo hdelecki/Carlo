@@ -3,6 +3,8 @@ from geometry import Point, Rectangle, Circle, Ring
 from typing import Union
 import copy
 
+from utils import myround
+
 
 class Entity:
     def __init__(self, center: Point, heading: float, movable: bool = True, friction: float = 0):
@@ -80,7 +82,11 @@ class Entity:
             
             '''
             
+            # x = myround(new_center.x, split_into=4)
+            # y = myround(new_center.y, split_into=4)
+            # self.center = Point(x,y)
             self.center = new_center
+
             self.heading = np.mod(new_heading, 2*np.pi) # wrap the heading angle between 0 and +2pi
             self.velocity = new_velocity
             self.acceleration = new_acceleration
