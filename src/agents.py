@@ -6,8 +6,7 @@ from geometry import Point
 class Car(RectangleEntity):
     def __init__(self, center: Point, heading: float, color: str = 'red',
                  init_dir='west', final_dir='east', ts_total=0,
-                 pos_path=None, pos_controller=None,
-                 ang_path=None, ang_controller=None):
+                 pos_path=None, pos_controller=None, ang_controller=None):
 
         size = Point(4., 2.)
         movable = True
@@ -24,7 +23,6 @@ class Car(RectangleEntity):
         self.pos_path = pos_path
         self.pos_controller = pos_controller
 
-        self.ang_path = ang_path
         self.ang_controller = ang_controller
 
         

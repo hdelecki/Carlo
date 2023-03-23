@@ -31,22 +31,16 @@ def final_position(dir):
     return np.array(table[dir])
 
 def mid_point_position(init, final):
-    right_turns = [('north', 'west'),
-                   ('west', 'south'),
-                   ('south', 'east'),
-                   ('east', 'north')]
 
-    if (init, final) in right_turns:  # right turn: turns a tighter angle 
-        table = {'south': [56,60],
-                 'north': [64,60],
-                 'east':  [60,56],
-                 'west':  [60,64]}
-    else:  # left or straight
-        table = {'south': [60,60],
-                 'north': [60,60],
-                 'east':  [60,60],
-                 'west':  [60,60]}
-    return np.array(table[final])
+    mid_point = [60,60]
+    val, idx = find_nearest(init_position(init), 60)
+    mid_point[idx] = val
+
+    val, idx = find_nearest(final_position(final), 60)
+    mid_point[idx] = val
+
+    return mid_point
+
 
 def final_angle(dir):
     table = {'south': 1.5*np.pi,
@@ -103,7 +97,7 @@ def get_pos_diff(real, target, idx):
 
 
 def get_ang_diff(real, target):
-    diff = (target-real)[0]
+    diff = target-real
     # return (diff + np.pi) % 2*np.pi - np.pi
     if diff > np.pi: return diff - 2*np.pi
     elif diff < -np.pi: return diff + 2*np.pi
@@ -127,29 +121,22 @@ def get_controls(car, dt):
     u_throttle = car.pos_controller(pos_diff, dt=dt)
 
     # Get steering value.
-    ang_diff = get_ang_diff(car.ang_path[ts], car.heading)
+    desired_heading = np.arctan2(car.pos_path[ts+1][1] - car.y , car.pos_path[ts+1][0] - car.x)
+    ang_diff = get_ang_diff(desired_heading, car.heading)  
     u_steering = car.ang_controller(ang_diff, dt=dt)
 
-    if ts + 1 < min(car.ang_path.shape[0], car.pos_path.shape[0]): car.ts_now += 1
+    if ts + 2 < car.pos_path.shape[0]: car.ts_now += 1
     return pos_diff, ang_diff, u_steering, u_throttle
 
 
-def spawn_rival(dt, timesteps, init='west', final='north', pos_path_noise=0.0, ang_path_noise=0.0):
+def spawn_rival(dt, timesteps, init='west', final='north', pos_path_noise=0.0):
     if (init, final) not in populate_rival_directions(): raise Exception("Invalid `init` of `final`.")
 
     car = Car(Point(*init_position(init)), init_angle(init), init_dir=init, final_dir=final, ts_total=timesteps)
 
     car.pos_path = get_position_path(initial=init, final=final, timesteps=timesteps, noise_std=pos_path_noise)
-    car.ang_path = get_angular_path(initial=car.heading, final=final_angle(final), timesteps=timesteps, noise_std=ang_path_noise)
 
     car.pos_controller = PID(Kp=20.0, Ki=0.1, Kd=20.0, sample_time=dt, setpoint=0)
-    car.ang_controller = PID(Kp=2.0, Ki=0.001, Kd=0.1, sample_time=dt, setpoint=0)
-
-
-    # Special cases due to angle wrapping:
-    if (init, final) == ('north', 'east'):
-        car.ang_path = get_angular_path(initial=car.heading, final=2*np.pi, timesteps=timesteps)
-    elif (init, final) == ('west', 'south'):
-        car.ang_path = get_angular_path(initial=2*np.pi, final=final_angle(final), timesteps=timesteps)
+    car.ang_controller = PID(Kp=1.0, Ki=0.001, Kd=0.01, sample_time=dt, setpoint=0)
 
     return car

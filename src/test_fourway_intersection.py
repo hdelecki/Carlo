@@ -14,11 +14,11 @@ def test(u_throttle_allowed_values, u_steering_allowed_values):
     dt = 0.1
     w = build_world(dt)
 
-    ts_total = 100
+    ts_total = 400
 
     for (init, final) in populate_rival_directions():
 
-        c1 = spawn_rival(dt, timesteps=ts_total, init=init, final=final, pos_path_noise=0, ang_path_noise=0)
+        c1 = spawn_rival(dt, timesteps=ts_total, init=init, final=final, pos_path_noise=0)
         c1.set_control(0, 0)
         w.add(c1)
 
@@ -35,14 +35,14 @@ def test(u_throttle_allowed_values, u_steering_allowed_values):
 
             pos_diff, ang_diff, u_steering, u_throttle = get_controls(c1, dt)
 
-            u_throttle = find_nearest(u_throttle_allowed_values, u_throttle)
-            u_steering = find_nearest(u_steering_allowed_values, u_steering)
+            u_throttle, _ = find_nearest(u_throttle_allowed_values, u_throttle)
+            u_steering, _ = find_nearest(u_steering_allowed_values, u_steering)
 
             c1.set_control(u_steering, u_throttle)
             
             w.tick() # This ticks the world for one time step (dt second)
             w.render()
-            time.sleep(dt/50) # Let's watch it 4x
+            time.sleep(dt/40) # Let's watch it 4x
 
             print(f"Timestep: {ts}, Pos_Diff: {pos_diff} and u_th: {u_throttle}  |  Ang_Diff: {ang_diff} and u_st: {u_steering}")
 
@@ -54,7 +54,7 @@ def test(u_throttle_allowed_values, u_steering_allowed_values):
 if __name__ == "__main__":
 
     ### Params ###
-    u_throttle_allowed_values = np.linspace(-2, +2, 3)
+    u_throttle_allowed_values = np.linspace(-20, +20, 3)
     u_steering_allowed_values = np.linspace(-1, +1, 20)
     ##############
 

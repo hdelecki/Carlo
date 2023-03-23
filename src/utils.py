@@ -26,7 +26,7 @@ def dump_csv(obj, id):
 def find_nearest(a, a0):
     "Element in nd array `a` closest to the scalar value `a0`"
     idx = np.abs(a - a0).argmin()
-    return a.flat[idx]
+    return a.flat[idx], idx
 
 def extrema(arr):
     a = np.array(arr)

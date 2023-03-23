@@ -36,7 +36,7 @@ def loop(id, init_dir, final_dir, ts_total):
     dt = 0.1
     w = build_world(dt)
 
-    c1 = spawn_rival(dt, ts_total, init_dir, final_dir, pos_path_noise=0.01, ang_path_noise=0.01)
+    c1 = spawn_rival(dt, ts_total, init_dir, final_dir, pos_path_noise=0.01)
     c1.set_control(0, 0)
     w.add(c1)
 
