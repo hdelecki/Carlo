@@ -159,7 +159,7 @@ Base.hash(t::CarloDiscreteState) = Base.hash(flatten(t))
 
 POMDPs.actions(pomdp::CarloPOMDP) = (:brake, :coast, :go)
 
-POMDPs.actionindex(pomdp::CarloPOMDP, a::Symbol) = findfirst(POMDPs.actions(pomdp), a)
+POMDPs.actionindex(pomdp::CarloPOMDP, a::Symbol) = findfirst(x->x==a, POMDPs.actions(pomdp))
 
 
 ### Transitions ###
@@ -169,7 +169,8 @@ function POMDPs.isterminal(p::CarloPOMDP, s::CarloDiscreteState)
 end
 
 function POMDPs.transition(pomdp::CarloPOMDP, s::CarloDiscreteState, a::Symbol)
-    return nothing   # Learnt from data
+    @warn "Not supposed to have landed here (POMDPs.transition)"
+    return nothing   # Will be overwritten from learned from data
 end
 
 
@@ -186,7 +187,8 @@ end
 
 
 function POMDPs.observation(pomdp::CarloPOMDP, sp::CarloDiscreteState)
-    return nothing   # Learnt from data
+    @warn "Not supposed to have landed here (POMDPs.observation)"
+    return nothing   # Will be overwritten from learned from data
 end
 
 

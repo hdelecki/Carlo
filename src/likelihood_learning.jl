@@ -183,5 +183,25 @@ end
 
 function tabulate(pomdp::CarloPOMDP; dir="../")
     Trans_Func, Reward_Func, Obs_Func = tabulate_learn(pomdp; dir=dir)
-    return TabularPOMDP(Trans_Func, Reward_Func, Obs_Func, pomdp.discount);
+    return global LLTAB = TabularPOMDP(Trans_Func, Reward_Func, Obs_Func, pomdp.discount);
+end
+
+
+# Overload T(s'|a,s) from the learned data
+function POMDPs.transition(pomdp::CarloPOMDP, s::CarloDiscreteState, a::Symbol)
+    si = POMDPs.stateindex(pomdp, s)
+    ai = POMDPs.actionindex(pomdp, a)
+
+    destinations = states(pomdp)
+    probs = LLTAB.T[:,ai,si]
+    return SparseCat(destinations, probs)
+end
+
+# Overload O(s'|a) from the learned data
+function POMDPs.observation(pomdp::CarloPOMDP, sp::CarloDiscreteState)
+    spi = POMDPs.stateindex(pomdp, sp)
+
+    destinations = observations(pomdp)
+    probs = LLTAB.O[:,1,spi]
+    return SparseCat(destinations, probs)
 end
