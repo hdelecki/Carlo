@@ -7,33 +7,6 @@ include("carlopomdp.jl")
 normalize_Func(A::AbstractArray{Float64, 3}) = A ./ sum(A, dims=1)
 validate_Func(A::AbstractArray{Float64, 3}, eps=1e-5) = all(1.0 + eps .> sum(A, dims=1) .> 1.0 - eps)
 
-
-function learn_rival(pomdp)
-    files = readdir("../csvfiles"; join=true)
-
-    Trans_Func = DefaultDict(0)
-    Vels = []
-    
-    for i = tqdm(1:length(files))
-        df = DataFrame(CSV.File(files[i]))
-
-        for r in 1:nrow(df)-1
-            try
-                s  = get_rival_state_from_row(pomdp, df[r, :X_Position], df[r, :Y_Position], df[r, :StartDir], df[r, :FinalDir], L2_norm([df[r, :X_Velocity], df[r, :Y_Velocity]]))
-                sp = get_rival_state_from_row(pomdp, df[r+1, :X_Position], df[r+1, :Y_Position], df[r+1, :StartDir], df[r+1, :FinalDir], L2_norm([df[r+1, :X_Velocity], df[r+1, :Y_Velocity]]))
-                Trans_Func[(s,sp)] += 1
-            catch
-                continue
-            end
-
-            push!(Vels, L2_norm([df[r, :X_Velocity], df[r, :Y_Velocity]]))
-        end
-
-    end
-
-    return Trans_Func
-end
-
 function get_ego_action_from_row(pomdp, u)
     if u > 0
         return :go
@@ -101,7 +74,7 @@ function get_rival_obs_from_row(pomdp, x,y,h,vel)
 end
 
 
-function tabulate_learn(pomdp::CarloPOMDP)
+function tabulate_learn(pomdp::CarloPOMDP; dir="../")
     num_states = length(states(pomdp))
     num_actions = length(actions(pomdp))
     num_obs = length(observations(pomdp))
@@ -114,7 +87,7 @@ function tabulate_learn(pomdp::CarloPOMDP)
 
 
     ### Learn from rivals ###
-    files = readdir("../csvfiles_rival/"; join=true)
+    files = readdir("$(dir)csvfiles_rival/"; join=true)
 
     for i = tqdm(1:length(files))
         df = DataFrame(CSV.File(files[i]))
@@ -136,7 +109,7 @@ function tabulate_learn(pomdp::CarloPOMDP)
 
 
     ### Learn from egos ###
-    files = readdir("../csvfiles_ego/"; join=true)
+    files = readdir("$(dir)csvfiles_ego/"; join=true)
 
     for i = tqdm(1:length(files))
         df = DataFrame(CSV.File(files[i]))
@@ -208,7 +181,7 @@ function tabulate_learn(pomdp::CarloPOMDP)
     return (Trans_Func, Reward_Func, Obs_Func)
 end
 
-function tabulate(pomdp::CarloPOMDP)
-    Trans_Func, Reward_Func, Obs_Func = tabulate_learn(pomdp)
+function tabulate(pomdp::CarloPOMDP; dir="../")
+    Trans_Func, Reward_Func, Obs_Func = tabulate_learn(pomdp; dir=dir)
     return TabularPOMDP(Trans_Func, Reward_Func, Obs_Func, pomdp.discount);
 end

@@ -1,5 +1,6 @@
 using CSV, DataFrames
 using ProgressBars: tqdm
+using Statistics: mean, median
 
 ### Params ###
 verify_csv = true
@@ -27,6 +28,24 @@ function verify(;plot_data=true)
     else
         return (X, Y)
     end
+end
+
+
+function velocities()
+
+    files = readdir("../csvfiles_rival"; join=true)
+
+    vels = zeros(length(files))
+
+    @info "Using $(Threads.nthreads()) threads."
+    Threads.@threads for i = tqdm(1:length(files))
+        df = DataFrame(CSV.File(files[i]))
+        X = df[:,"X_Velocity"]
+        Y = df[:,"Y_Velocity"]
+        vels[i] = mean(sqrt.(X.^2 + Y.^2))
+    end
+    
+    return vels
 end
 
 ###########################################################
@@ -66,6 +85,7 @@ end
 if verify_csv 
     using Plots
     X, Y, fig = verify(plot_data=true)
+    @show vels = velocities()
     Plots.display(fig)
 end
 
