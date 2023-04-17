@@ -12,15 +12,17 @@ def empty_df():
                 'X_Velocity': [],
                 'Y_Velocity': [],
                 'Heading'   : [],
+                'StartDir'  : [],
+                'FinalDir'  : [],
                 'U_Steering': [],
                 'U_Throttle': [],
                 }
 
     return pd.DataFrame(df_values)
 
-def dump_csv(obj, id):
+def dump_csv(obj, id, cartype):
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    savename = f"../csvfiles/{timestamp}_{id}.csv"
+    savename = f"../csvfiles_{cartype}/{timestamp}_{id}.csv"
     return obj.to_csv(savename, index=False)
 
 def find_nearest(a, a0):
@@ -36,3 +38,6 @@ def myround(number, split_into=2):
     "Rounds `number` to the nearest 0.5 when `split_into` == 2"
     dv = 1/split_into
     return round(number * dv) / dv
+
+def close_to(a1, a2):
+    return np.linalg.norm(np.array(a1) - np.array(a2)) < 5  # [meters]

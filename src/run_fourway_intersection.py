@@ -16,7 +16,7 @@ render = True
 ts_total = 177
 (init, final) = ('east', 'south')
 
-c1 = spawn_rival(dt, timesteps=ts_total, init=init, final=final, pos_path_noise=0.2)
+c1 = spawn_car(dt, timesteps=ts_total, init=init, final=final, pos_path_noise=0.2)
 c1.set_control(0, 0)
 w.add(c1)
 

@@ -17,17 +17,17 @@ def init_angle(dir):
     return table[dir]
 
 def init_position(dir):
-    table = {'south': [63,40],
-             'north': [57,80],
-             'east':  [80,63],
-             'west':  [40,57]}
+    table = {'south': [63,50],
+             'north': [57,70],
+             'east':  [70,63],
+             'west':  [50,57]}
     return np.array(table[dir])
 
 def final_position(dir):
-    table = {'south': [57,40],
-             'north': [63,80],
-             'east':  [80,57],
-             'west':  [40,63]}
+    table = {'south': [57,50],
+             'north': [63,70],
+             'east':  [70,57],
+             'west':  [50,63]}
     return np.array(table[dir])
 
 def mid_point_position(init, final):
@@ -129,7 +129,7 @@ def get_controls(car, dt):
     return pos_diff, ang_diff, u_steering, u_throttle
 
 
-def spawn_rival(dt, timesteps, init='west', final='north', pos_path_noise=0.0):
+def spawn_car(dt, timesteps, init='west', final='north', pos_path_noise=0.0):
     if (init, final) not in populate_rival_directions(): raise Exception("Invalid `init` of `final`.")
 
     car = Car(Point(*init_position(init)), init_angle(init), init_dir=init, final_dir=final, ts_total=timesteps)

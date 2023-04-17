@@ -2,7 +2,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from pathlib import Path
-Path("../csvfiles").mkdir(parents=True, exist_ok=True)  # creates new folder
+Path("../csvfiles_rival").mkdir(parents=True, exist_ok=True)  # creates new folder
 
 from utils import *
 from scenarios import *
@@ -36,29 +36,34 @@ def loop(id, init_dir, final_dir, ts_total):
     dt = 0.1
     w = build_world(dt)
 
-    c1 = spawn_rival(dt, ts_total, init_dir, final_dir, pos_path_noise=0.01)
+    c1 = spawn_car(dt, ts_total, init_dir, final_dir, pos_path_noise=0.01)
     c1.set_control(0, 0)
     w.add(c1)
 
     Rows = []
+    reached_flag = False
 
     for ts in range(ts_total):
         if w.collision_exists(c1): return w.close()  # return without recording
 
         pos_diff, ang_diff, u_steering, u_throttle = get_controls(c1, dt)
+
+        u_throttle, _ = find_nearest(u_throttle_allowed_values, u_throttle)
+        u_steering, _ = find_nearest(u_steering_allowed_values, u_steering)
+
         c1.set_control(u_steering, u_throttle)
-        
+    
         w.tick()
-        if render:
-            w.render()
-            time.sleep(dt/20)
+        if render: w.render(); time.sleep(dt/20)
+        if close_to(final_position(final_dir), [c1.x, c1.y]): reached_flag = True
 
-        Rows.append([ts, c1.x, c1.y, c1.xp, c1.yp, c1.heading, u_steering, u_throttle])
+        Rows.append([ts, c1.x, c1.y, c1.xp, c1.yp, c1.heading, init_dir, final_dir, u_steering, u_throttle])
 
 
-    Data = empty_df()
-    Data = Data.append(pd.DataFrame(Rows, columns=Data.columns), ignore_index=True).astype(float)
-    dump_csv(Data, id)
+    if reached_flag:
+        Data = empty_df()
+        Data = Data.append(pd.DataFrame(Rows, columns=Data.columns), ignore_index=True)
+        dump_csv(Data, id, cartype="rival")
 
     return w.close()
 
@@ -69,9 +74,11 @@ if __name__ == "__main__":
     ### Params ###
     render = False
     parallel = True
-    num_of_runs = 100000
-    ts_total_min = 30
-    ts_total_max = 200
+    u_throttle_allowed_values = np.linspace(-25, +25, 3)
+    u_steering_allowed_values = np.linspace(-5, +5, 200)
+    num_of_runs = 1000
+    ts_total_min = 20
+    ts_total_max = 300
     ##############
 
 

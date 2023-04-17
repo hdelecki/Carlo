@@ -17,7 +17,7 @@ using Parameters
     min_speed = 0
 end
 
-function tick!(state::CarloCar; dt::Number)
+function carlo_tick!(state::CarloCar; dt::Number)
     speed = sqrt(sum(state.velocity.^2))
     heading = state.heading
 
