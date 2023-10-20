@@ -1,26 +1,29 @@
+import sys
+sys.path.insert(1, 'carlo')
+
 import warnings
 warnings.filterwarnings('ignore')
 
 from pathlib import Path
-Path("../csvfiles_rival").mkdir(parents=True, exist_ok=True)  # creates new folder
+import argparse
 
-from utils import *
-from scenarios import *
-from fourway_intersection import build_world
+from carlo.utils import *
+from carlo.scenarios import *
+from carlo.fourway_intersection import build_world
 
 from random import choice
 import numpy as np
 import pandas as pd
 
-from world import World
-from agents import Car, RectangleBuilding, Pedestrian, Painting
-from geometry import Point
+from carlo.world import World
+from carlo.agents import Car, RectangleBuilding, Pedestrian, Painting
+from carlo.geometry import Point
 import time
 
 from tqdm import tqdm
 from multiprocessing import cpu_count, Pool
 # from joblib import Parallel, delayed
-import istarmap  # import to apply patch
+import carlo.istarmap  # import to apply patch
 
 
 def get_inputs(id, rival_dirs, ts_total_min, ts_total_max):
@@ -68,19 +71,39 @@ def loop(id, init_dir, final_dir, ts_total):
 
     return w.close()
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Description of your script')
+    parser.add_argument('--render', action='store_true', help='Enable rendering')
+    parser.add_argument('--no-parallel', dest='parallel', action='store_false', help='Disable parallel processing')
+    parser.add_argument('--num-of-runs', type=int, default=1000, help='Number of runs')
+    parser.add_argument('--ts-total-min', type=int, default=20, help='Minimum ts_total value')
+    parser.add_argument('--ts-total-max', type=int, default=300, help='Maximum ts_total value')
+    parser.add_argument('--results-dir', type=str, default='../csvfiles_rival', help='Directory to save results')
+    return parser.parse_args()
+
 
 
 if __name__ == "__main__":
 
+    args = parse_args()
+
     ### Params ###
-    render = False
-    parallel = True
+    # render = False
+    # parallel = True
     u_throttle_allowed_values = np.linspace(-25, +25, 3)
     u_steering_allowed_values = np.linspace(-5, +5, 200)
-    num_of_runs = 1000
-    ts_total_min = 20
-    ts_total_max = 300
+    # num_of_runs = 1000
+    # ts_total_min = 20
+    # ts_total_max = 300
+    # results_dir = "../csvfiles_rival"
+    render = args.render
+    parallel = args.parallel
+    num_of_runs = args.num_of_runs
+    ts_total_min = args.ts_total_min
+    ts_total_max = args.ts_total_max
+    results_dir = args.results_dir
     ##############
+    Path(results_dir).mkdir(parents=True, exist_ok=True)  # creates new folder
 
 
     rival_dirs = populate_rival_directions()
