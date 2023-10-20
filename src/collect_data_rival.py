@@ -62,7 +62,8 @@ def loop(id, init_dir, final_dir, ts_total):
 
     if reached_flag:
         Data = empty_df()
-        Data = Data.append(pd.DataFrame(Rows, columns=Data.columns), ignore_index=True)
+        #Data = Data._append(pd.DataFrame(Rows, columns=Data.columns), ignore_index=True)
+        Data = pd.concat([Data, pd.DataFrame(Rows, columns=Data.columns)])
         dump_csv(Data, id, cartype="rival")
 
     return w.close()

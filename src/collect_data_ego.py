@@ -60,7 +60,9 @@ def loop(id, init_dir, final_dir, ts_total):
 
     if close_to(final_position(final_dir), [c1.x, c1.y]):
         Data = empty_df()
-        Data = Data.append(pd.DataFrame(Rows, columns=Data.columns), ignore_index=True)
+        #Data = Data._append(pd.DataFrame(Rows, columns=Data.columns), ignore_index=True)
+        #Data.loc[len(Data)] = pd.DataFrame(Rows, columns=Data.columns)
+        Data = pd.concat([Data, pd.DataFrame(Rows, columns=Data.columns)])
         dump_csv(Data, id, cartype="ego")
 
     return w.close()

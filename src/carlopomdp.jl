@@ -1,6 +1,7 @@
 using POMDPs
-using POMDPModels: TabularPOMDP
-using POMDPModelTools: SparseCat, Deterministic
+# using POMDPModels: TabularPOMDP
+# using POMDPModelTools: SparseCat, Deterministic
+using POMDPTools
 using StaticArrays
 using Parameters
 using Random
