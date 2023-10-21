@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import time
+from pathlib import Path
 
 def clamp(num, min_value, max_value):
    return max(min(num, max_value), min_value)
@@ -20,9 +21,10 @@ def empty_df():
 
     return pd.DataFrame(df_values)
 
-def dump_csv(obj, id, cartype):
+def dump_csv(results_dir, obj, id, cartype):
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    savename = f"../csvfiles_{cartype}/{timestamp}_{id}.csv"
+    Path(f"{results_dir}/csvfiles_{cartype}/").mkdir(parents=True, exist_ok=True)
+    savename = f"{results_dir}/csvfiles_{cartype}/{timestamp}_{id}.csv"
     return obj.to_csv(savename, index=False)
 
 def find_nearest(a, a0):

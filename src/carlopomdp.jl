@@ -10,6 +10,23 @@ using Distributions
 include("utils.jl")
 include("CarloCar_dynamics.jl")
 
+"""
+Intersection box layout:
+
+    |      1    |
+---------------------
+    |  5   |  6  | 
+  2 |------------| 3
+    |  7   |  8  |
+---------------------
+    |      4     |
+"""
+
+const egodir2boxidxs = Dict(("south", "west") => [4,8,6,5,2],
+                            ("south", "east") => [4, 8, 3],
+                            ("south", "north") =>[4, 8, 6, 1]
+                            )
+
 mutable struct CarloDiscreteState
     ego_box::Int
     rival_box::Int
@@ -25,7 +42,7 @@ end
 
     # Ego goes from south to west
     # ego_box_space::AbstractArray = union(get_box_centroids(bottom_left=[60,50], top_right=[65,65], spacing=5), get_box_centroids(bottom_left=[50,60], top_right=[65,65], spacing=5))
-    ego_box_idxs = [4,8,6,5,2]
+    ego_box_idxs = egodir2boxidxs[("south", "west")]#[4,8,6,5,2]
     ego_box_space = get_boxes(ego_box_idxs)
     
     # Rival can start/end any direction
@@ -137,7 +154,7 @@ end
 ### States ###
 
 function POMDPs.states(pomdp::CarloPOMDP)
-    ego = [4, 8, 6, 5, 2]
+    ego = pomdp.ego_box_idxs#[4, 8, 6, 5, 2]
     rival = collect(1:8)
     rival_vel = [:within_limit, :above_limit]
     rival_itn = [:left, :right, :straight]
@@ -179,6 +196,7 @@ end
 
 function POMDPs.observations(pomdp::CarloPOMDP)
     ego = [4, 8, 6, 5, 2]
+    #ego = collect(1:8)
     rival = collect(1:8)
     rival_vel = [:within_limit, :above_limit]
     rival_hdg = [:east, :north, :west, :south]
@@ -190,6 +208,14 @@ end
 function POMDPs.observation(pomdp::CarloPOMDP, sp::CarloDiscreteState)
     @warn "Not supposed to have landed here (POMDPs.observation)"
     return nothing   # Will be overwritten from learned from data
+end
+
+function POMDPs.obsindex(pomdp::CarloPOMDP, o::CarloDiscreteState)
+    return findfirst(x->flatten(x)==flatten(o), POMDPs.observations(pomdp))
+end
+
+function POMDPs.stateindex(pomdp::CarloPOMDP, s::CarloDiscreteState)
+    return findfirst(x->flatten(x)==flatten(s), POMDPs.states(pomdp))
 end
 
 

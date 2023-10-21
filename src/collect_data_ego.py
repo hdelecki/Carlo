@@ -26,15 +26,15 @@ from multiprocessing import cpu_count, Pool
 import carlo.istarmap  # import to apply patch
 
 
-def get_inputs(id, ego_dirs, ts_total_min, ts_total_max):
+def get_inputs(results_dir, id, ego_dirs, ts_total_min, ts_total_max):
     init_dir, final_dir = choice(ego_dirs)
     ts_total  = np.random.randint(ts_total_min, ts_total_max)
 
     # print((init_dir, final_dir, pos_noise, ang_noise, ts_total))
-    return (id, init_dir, final_dir, ts_total)
+    return (results_dir, id, init_dir, final_dir, ts_total)
 
 
-def loop(id, init_dir, final_dir, ts_total):
+def loop(results_dir, id, init_dir, final_dir, ts_total):
     # Build the fourway intersection world
     dt = 0.1
     w = build_world(dt)
@@ -66,7 +66,7 @@ def loop(id, init_dir, final_dir, ts_total):
         #Data = Data._append(pd.DataFrame(Rows, columns=Data.columns), ignore_index=True)
         #Data.loc[len(Data)] = pd.DataFrame(Rows, columns=Data.columns)
         Data = pd.concat([Data, pd.DataFrame(Rows, columns=Data.columns)])
-        dump_csv(Data, id, cartype="ego")
+        dump_csv(results_dir, Data, id, cartype="ego")
 
     return w.close()
 
@@ -75,11 +75,11 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Description of your script')
     parser.add_argument('--render', action='store_true', help='Enable rendering')
     parser.add_argument('--no-parallel', dest='parallel', action='store_false', help='Disable parallel processing')
-    parser.add_argument('--num-of-runs', type=int, default=1000, help='Number of runs')
+    parser.add_argument('--runs', type=int, default=1000, help='Number of runs')
     parser.add_argument('--ts-total-min', type=int, default=150, help='Minimum ts_total value')
     parser.add_argument('--ts-total-max', type=int, default=151, help='Maximum ts_total value')
     parser.add_argument('--ego-dirs', nargs='+', type=str, default=['south', 'west'], help='List of ego directions')
-    parser.add_argument('--results-dir', type=str, default='../csvfiles_ego', help='Directory to save results')
+    parser.add_argument('--results-dir', type=str, default='../csvfiles', help='Directory to save results')
     return parser.parse_args()
 
 
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     # results_dir = "../csvfiles_ego"
     render = args.render
     parallel = args.parallel
-    num_of_runs = args.num_of_runs
+    num_of_runs = args.runs
     ts_total_min = args.ts_total_min
     ts_total_max = args.ts_total_max
     ego_dirs = [tuple(args.ego_dirs[i:i+2]) for i in range(0, len(args.ego_dirs), 2)]
@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
 
     
-    iterable = [get_inputs(id, ego_dirs, ts_total_min, ts_total_max) for id in tqdm(range(num_of_runs), desc="Building scenarios")]
+    iterable = [get_inputs(results_dir, id, ego_dirs, ts_total_min, ts_total_max) for id in tqdm(range(num_of_runs), desc="Building scenarios")]
 
     if parallel:
         if render: raise Exception("Cannot render graphics while parallelized.")
